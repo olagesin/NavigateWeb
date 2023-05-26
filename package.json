@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "nfc-pcsc": "^0.8.1"
+  }
+}

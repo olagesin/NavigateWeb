@@ -1,0 +1,152 @@
+﻿@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+@page "/map"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using ParvigateUI.DTOs;
+@using System.Reflection;
+
+<h3>Select a location to save</h3>
+
+<div class="grid-container">
+    <div class="map-container">
+        <div id="map" style="width:800px; height:600px;"></div>
+    </div>
+
+@if (location != null)
+{
+    <div class="form-container">
+            <h3>Add Location</h3>
+
+    <form>
+        <div class="form-group">
+            <label for="latitude">Latitude</label>
+            <input type="text" class="form-control" value="@location.Latitude" id="latitude" readonly>
+        </div>
+        <div class="form-group">
+            <label for="longitude">Longitude</label>
+            <input type="text" class="form-control" value="@location.Longitude" id="longitude" readonly>
+        </div>
+        <div class="form-group">
+            <label for="locationType">Location Type:</label>
+            <select id="locationType" @bind="location.LocationType">
+                <option value="ParkingStation">Parking Station</option>
+                <option value="EventCentre">Event Centre</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input id="name" type="text" @bind="location.Name" />
+        </div>
+        <div class="form-group">
+            <label for="spaceCount">Space Count:</label>
+            <input id="spaceCount" type="number" @bind="location.SpaceCount" />
+        </div>
+        <button type="button" class="btn btn-primary" @onclick="AddLocation">Submit</button>
+    </form>
+    </div>
+}
+</div>
+
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Adjust the column widths as needed */
+        gap: 20px; /* Adjust the gap between the columns as needed */
+    }
+
+    .map-container {
+        /* CSS styles for the map container */
+    }
+
+    .form-container {
+        /* CSS styles for the form container */
+    }
+</style>
+
+@code {
+    private static LeafletMap leafletMap;
+    private IJSObjectReference? module;
+    private string? result;
+    private HttpClient httpClient;
+    private AddLocationDto location;
+
+    protected override async Task OnInitializedAsync()
+    {
+        leafletMap = this;
+        httpClient = new HttpClient();
+
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./leafletMap.js");
+
+        if (module is not null)
+        {
+            result = await module.InvokeAsync<string>("load_map");
+        }
+        //await JSRuntime.InvokeVoidAsync("initializeMap");
+    }
+
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    if (firstRender)
+    //    {
+    //        var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+    //        Console.WriteLine($"Assembly Name: {assemblyName}");
+    //        //await JSRuntime.InvokeVoidAsync("configureMapClick", DotNetObjectReference.Create(this));
+
+    //        //var client = new HttpClient();
+    //        //var rawJsonFile = await client.GetStringAsync("https://localhost:7104/geojson.json");
+    //        //rawJsonFile = rawJsonFile.Replace('\n', ' ');
+    //        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./leafletMap.js");
+
+    //        if(module is not null)
+    //        {
+    //            result = await module.InvokeAsync<string>("load_map");
+    //        }
+    //    }
+    //}
+
+    [JSInvokable("HandleMapClick")]
+    public static void HandleMapClick(double latitude, double longitude)
+    {
+        leafletMap.LoadLocation(latitude, longitude);
+    }
+
+    public void LoadLocation(double latitude, double longitude)
+    {
+        location = new AddLocationDto
+        {
+            Latitude = latitude,
+            Longitude = longitude,
+        };
+
+        StateHasChanged();
+    }
+
+    private async Task AddLocation()
+    {
+        if (location != null)
+        {
+            var response = await httpClient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Locations/add-location", location);
+            if (response.IsSuccessStatusCode)
+            {
+                location = new AddLocationDto();
+                // Location added successfully
+                // You can perform further actions or show a success message
+            }
+            else
+            {
+                // Error occurred while adding the location
+                // You can handle the error or show an error message
+            }
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if(module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}

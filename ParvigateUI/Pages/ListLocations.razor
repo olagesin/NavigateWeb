@@ -1,0 +1,66 @@
+﻿@page "/list-locations"
+@inject HttpClient Httpclient
+@using System.Text.Json
+@using ParvigateUI.DTOs
+@using System.Text.Json.Serialization;
+
+<h3>List of Locations</h3>
+
+
+@if (locations == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Location ID</th>
+                <th>Location Type</th>
+                <th>Longitude</th>
+                <th>Latitude</th>
+                <th>Name</th>
+                <th>Space Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var location in locations)
+            {
+                <tr>
+                    <td>@location.Id</td>
+                    <td>@location.LocationType</td>
+                    <td>@location.Longitude</td>
+                    <td>@location.Latitude</td>
+                    <td>@location.Name</td>
+                    <td>@location.SpaceCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+    private GlobalResponse<List<GetLocationDto>> locationsResponse;
+    private List<GetLocationDto> locations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Locations/list-all-locations");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                locationsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetLocationDto>>>(responseAsString, options);
+                locations = locationsResponse.Data;
+            }
+        }
+        //return base.OnInitializedAsync();
+    }
+}

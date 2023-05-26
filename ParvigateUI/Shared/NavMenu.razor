@@ -1,0 +1,133 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">ParvigateUI</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3 dropdown" @onclick="ToggleMainDropdown">
+            <a class="nav-link dropdown-toggle" href="" role="button" aria-expanded="@openMainDropDown">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Main
+            </a>
+            <!-- Add dropdown menu here -->
+            <div class="dropdown-menu" style="display: @(openMainDropDown ? "block" : "none")">
+                <NavLink class="dropdown-item" href="#">
+                    Home
+                </NavLink>
+                <NavLink class="dropdown-item" href="counter">
+                    Counter
+                </NavLink>
+                <NavLink class="dropdown-item" href="fetchdata">
+                    FetchData
+                </NavLink>
+            </div>
+        </div>
+
+        <div class="nav-item px-3 dropdown" @onclick="ToggleLocationDropDown">
+                <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openLocationDropDown">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Locations
+                </a>
+                <div class="dropdown-menu" style="display: @(openLocationDropDown ? "block" : "none")">
+                    <NavLink class="dropdown-item" href="map">
+                        Add Location
+                    </NavLink>
+                    <NavLink class="dropdown-item" href="list-locations">
+                        List all locations
+                    </NavLink>
+                </div>
+        </div>
+         <div class="nav-item px-3 dropdown" @onclick="ToggleConnectionDropDown">
+                <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openConnectionDropDown">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Connections
+                </a>
+                <!-- Add dropdown menu here -->
+                <div class="dropdown-menu" style="display: @(openConnectionDropDown ? "block" : "none")">
+                    <NavLink class="dropdown-item" href="map">
+                        Add Connection
+                    </NavLink>
+                    <NavLink class="dropdown-item" href="list-connections">
+                        List all connections
+                    </NavLink>
+                    <!-- Add more dropdown items as needed -->
+                </div>
+        </div>
+        <div class="nav-item px-3 dropdown" @onclick="ToggleTagDropdown">
+            <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openTagDropDown">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Tags
+            </a>
+            <!-- Add dropdown menu here -->
+            <div class="dropdown-menu" style="display: @(openTagDropDown ? "block" : "none")">
+                <NavLink class="dropdown-item" href="map">
+                    Add Tag
+                </NavLink>
+                <NavLink class="dropdown-item" href="subpage2">
+                    List all tags
+                </NavLink>
+                <!-- Add more dropdown items as needed -->
+            </div>
+        </div>
+@*        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="fetchdata">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            </NavLink>
+        </div>*@
+@*        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="map">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Map
+            </NavLink>
+        </div>*@
+    </nav>
+</div>
+
+<style>
+    .dropdown-menu {
+        background-color: #212529;
+        border: none;
+    }
+</style>
+
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private bool openTagDropDown = false;
+    private bool openMainDropDown = false;
+    private bool openLocationDropDown = false;
+    private bool openConnectionDropDown = false;
+
+    private void ToggleConnectionDropDown()
+    {
+        openConnectionDropDown = !openConnectionDropDown;
+    }
+
+    private void ToggleLocationDropDown()
+    {
+        openLocationDropDown = !openLocationDropDown;
+    }
+
+    private void ToggleTagDropdown()
+    {
+        openTagDropDown = !openTagDropDown;
+    }
+
+    private void ToggleMainDropdown()
+    {
+        openMainDropDown = !openMainDropDown;
+    }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

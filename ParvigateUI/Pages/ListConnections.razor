@@ -1,0 +1,72 @@
+﻿@page "/list-connections"
+@inject HttpClient Httpclient
+@using System.Text.Json
+@using ParvigateUI.DTOs
+@using System.Text.Json.Serialization;
+
+<PageTitle>Connections</PageTitle>
+
+<h1>Connections</h1>
+
+@if (connections == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Source location Latitude</th>
+                <th>Source location longitude</th>
+                <th>Source location Name</th>
+                <th>Destination location Latitude</th>
+                <th>Destination location Longitude</th>
+                <th>Destination location name</th>
+                <th>Average speed</th>
+                <th>Distance in KM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var connection in connections)
+            {
+                <tr>
+                    <td>@connection.SourceLocation.Latitude</td>
+                    <td>@connection.SourceLocation.Longitude</td>
+                    <td>@connection.SourceLocation.Name</td>
+                    <td>@connection.DestinationLocation.Latitude</td>
+                    <td>@connection.DestinationLocation.Longitude</td>
+                    <td>@connection.DestinationLocation.Name</td>
+                    <td>@connection.AverageSpeed</td>
+                    <td>@connection.DistanceInKm</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+    private GlobalResponse<List<GetConnectionDto>> connectionsResponse;
+    private List<GetConnectionDto> connections;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Connections/list-all-connections");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if(string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                connectionsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetConnectionDto>>>(responseAsString, options);
+                connections = connectionsResponse.Data;
+            }
+        }
+        //return base.OnInitializedAsync();
+    }
+}

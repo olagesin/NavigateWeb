@@ -1,0 +1,27 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+<Map 
+    width="800px"
+    height="400px"
+    Parameters="@parameters"
+></Map>
+
+@code{
+    Map.LoadParameters parameters = new Map.LoadParameters()
+        {
+            location = new Map.Location()
+            {
+                longitude = 26.097133,
+                latitude = 44.446165
+            },
+            zoom_level = 16
+        };
+}
