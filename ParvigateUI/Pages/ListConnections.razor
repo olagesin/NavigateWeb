@@ -3,6 +3,8 @@
 @using System.Text.Json
 @using ParvigateUI.DTOs
 @using System.Text.Json.Serialization;
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <PageTitle>Connections</PageTitle>
 
@@ -39,6 +41,9 @@ else
                     <td>@connection.DestinationLocation.Name</td>
                     <td>@connection.AverageSpeed</td>
                     <td>@connection.DistanceInKm</td>
+                    <td>
+                        <button @onclick="() => HandleDeleteClick(connection.Id)">Delete</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -53,6 +58,7 @@ else
         };
     private GlobalResponse<List<GetConnectionDto>> connectionsResponse;
     private List<GetConnectionDto> connections;
+    private string Id = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,6 +67,7 @@ else
         if (response.IsSuccessStatusCode)
         {
             var responseAsString = await response.Content.ReadAsStringAsync();
+
             if(string.IsNullOrWhiteSpace(responseAsString) is false)
             {
                 connectionsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetConnectionDto>>>(responseAsString, options);
@@ -68,5 +75,30 @@ else
             }
         }
         //return base.OnInitializedAsync();
+    }
+
+    private async Task DeleteConnection(string connectionId)
+    {
+        var response = await Httpclient.DeleteAsync($"https://parvigateapi.azurewebsites.net/Connections/delete-connection?connectionId={connectionId}");
+
+        var responseAsString = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<string>>(responseAsString, options);
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Data);
+
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
+        }
+    }
+
+    private async Task HandleDeleteClick(string locationId)
+    {
+        await DeleteConnection(locationId);
     }
 }

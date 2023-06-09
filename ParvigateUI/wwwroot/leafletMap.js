@@ -1,6 +1,5 @@
 ﻿export function load_map() {
-    //console.log(JSON.parse(String(rawJsonFile)));
-    var map = L.map('map').setView([3.3923721313476567, 6.51951289080443], 13);
+    var map = L.map('map').setView([6.515805385300045, 3.3926725387573247], 16);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -9,7 +8,7 @@
 
 
     var popup = L.popup();
-
+    console.log("something");
     function onMapClick(e) {
         DotNet.invokeMethodAsync("ParvigateUI",'HandleMapClick', e.latlng.lat, e.latlng.lng);
         popup

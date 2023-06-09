@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <div class="nav-item px-3 dropdown" @onclick="ToggleLocationDropDown">
+        <div class="nav-item px-3 dropdown" @onmouseover="ToggleLocationDropDown" @onmouseout="ToggleLocationDropDown">
                 <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openLocationDropDown">
                     <span class="oi oi-list-rich" aria-hidden="true"></span> Locations
                 </a>
@@ -45,7 +45,7 @@
                     </NavLink>
                 </div>
         </div>
-         <div class="nav-item px-3 dropdown" @onclick="ToggleConnectionDropDown">
+        <div class="nav-item px-3 dropdown" @onmouseover="ToggleConnectionDropDown" @onmouseout="ToggleConnectionDropDown">
                 <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openConnectionDropDown">
                     <span class="oi oi-list-rich" aria-hidden="true"></span> Connections
                 </a>
@@ -60,7 +60,7 @@
                     <!-- Add more dropdown items as needed -->
                 </div>
         </div>
-        <div class="nav-item px-3 dropdown" @onclick="ToggleTagDropdown">
+        <div class="nav-item px-3 dropdown" @onmouseover="ToggleTagDropdown" @onmouseout="ToggleTagDropdown">
             <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openTagDropDown">
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Tags
             </a>

@@ -3,11 +3,14 @@
 @using System.Text.Json
 @using ParvigateUI.DTOs
 @using System.Text.Json.Serialization;
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
 
 <h3>List of Locations</h3>
 
 
-@if (locations == null)
+@if (locations == null || locations.Count == 0)
 {
     <p><em>Loading...</em></p>
 }
@@ -34,6 +37,9 @@ else
                     <td>@location.Latitude</td>
                     <td>@location.Name</td>
                     <td>@location.SpaceCount</td>
+                    <td>
+                        <button @onclick="() => HandleDeleteClick(location.Id)">Delete</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -41,12 +47,16 @@ else
 }
 @code {
     JsonSerializerOptions options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNameCaseInsensitive = true
-        };
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNameCaseInsensitive = true
+    };
+
     private GlobalResponse<List<GetLocationDto>> locationsResponse;
-    private List<GetLocationDto> locations;
+    private List<GetLocationDto> locations = new List<GetLocationDto>();
+    private IJSObjectReference? module;
+    private string name = "name";
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,5 +72,25 @@ else
             }
         }
         //return base.OnInitializedAsync();
+    }
+
+    private async Task DeleteLocation(string locationId)
+    {
+        var response = await Httpclient.DeleteAsync($"https://parvigateapi.azurewebsites.net/Locations/delete-location?locationId={locationId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            await JSRuntime.InvokeVoidAsync("alert", errorMessage);
+        }
+    }
+
+    private async Task HandleDeleteClick(string locationId)
+    {
+        await DeleteLocation(locationId);
     }
 }
