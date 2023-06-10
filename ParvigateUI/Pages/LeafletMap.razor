@@ -85,27 +85,6 @@
         //await JSRuntime.InvokeVoidAsync("initializeMap");
     }
 
-
-    //protected override async Task OnAfterRenderAsync(bool firstRender)
-    //{
-    //    if (firstRender)
-    //    {
-    //        var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-    //        Console.WriteLine($"Assembly Name: {assemblyName}");
-    //        //await JSRuntime.InvokeVoidAsync("configureMapClick", DotNetObjectReference.Create(this));
-
-    //        //var client = new HttpClient();
-    //        //var rawJsonFile = await client.GetStringAsync("https://localhost:7104/geojson.json");
-    //        //rawJsonFile = rawJsonFile.Replace('\n', ' ');
-    //        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./leafletMap.js");
-
-    //        if(module is not null)
-    //        {
-    //            result = await module.InvokeAsync<string>("load_map");
-    //        }
-    //    }
-    //}
-
     [JSInvokable("HandleMapClick")]
     public static void HandleMapClick(double latitude, double longitude)
     {

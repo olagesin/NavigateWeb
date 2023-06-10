@@ -1,0 +1,148 @@
+﻿@page "/add-connection"
+@inject IJSRuntime JSRuntime
+@inject HttpClient Httpclient
+@using System.Text.Json.Serialization;
+@using System.Text.Json
+@using ParvigateUI.DTOs;
+
+<h3>Add Connection</h3>
+
+<div>
+    <label for="location1">Source Location:</label>
+    <select id="location1" @onchange="OnLocation1Change">
+        <option value="">Select a location</option>
+        @foreach (var location in locations)
+        {
+            <option value="@location.Id">@location.Name</option>
+        }
+    </select>
+</div>
+
+<div>
+    <label for="location2">Destination Location:</label>
+    <select id="location2" @onchange="OnLocation2Change">
+        <option value="">Select a location</option>
+        @foreach (var location in locations)
+        {
+            <option value="@location.Id">@location.Name</option>
+        }
+    </select>
+</div>
+
+<button @onclick="SaveConnection" disabled="@disableCalculateButton">Add Connection</button>
+
+@if (distanceResult.HasValue)
+{
+    <p>Distance: @distanceResult meters</p>
+}
+
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+    private string sourceLocationId;
+    private string destinationLocationId;
+    private double? distanceResult;
+    private IJSObjectReference module;
+    private string result;
+    private GlobalResponse<List<GetLocationDto>> locationsResponse;
+    private List<GetLocationDto> locations = new List<GetLocationDto>();
+    private bool disableCalculateButton = true;
+    private HttpClient httpClient;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = new HttpClient();
+
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Locations/list-all-locations");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                locationsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetLocationDto>>>(responseAsString, options);
+                locations = locationsResponse.Data;
+            }
+        }
+
+
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./connections.js");
+
+        if (module is not null)
+        {
+            result = await module.InvokeAsync<string>("connectionFunctions");
+        }
+        //return base.OnInitializedAsync();
+    }
+
+    private void OnLocation1Change(ChangeEventArgs e)
+    {
+        sourceLocationId = e.Value.ToString();
+        UpdateCalculateButtonState();
+    }
+
+    private void OnLocation2Change(ChangeEventArgs e)
+    {
+        destinationLocationId = e.Value.ToString();
+        UpdateCalculateButtonState();
+    }
+
+    private void UpdateCalculateButtonState()
+    {
+        disableCalculateButton = string.IsNullOrEmpty(sourceLocationId) || string.IsNullOrEmpty(destinationLocationId);
+    }
+
+    private async Task SaveConnection()
+    {
+        // Get the latitude and longitude values based on the selected locations
+        double sourceLatitude = GetLatitude(sourceLocationId);
+        double sourceLongitude = GetLongitude(sourceLocationId);
+
+        double destinationLatitude = GetLatitude(destinationLocationId);
+        double destinationLongitude = GetLongitude(destinationLocationId);
+
+
+        // Call the JavaScript function to calculate the distance
+        double distance = await JSRuntime.InvokeAsync<double>("calculateDistance", sourceLatitude, sourceLongitude, destinationLatitude, destinationLongitude);
+        distanceResult = distance;
+
+        var connectionToAdd = new AddConnectionDto()
+        {
+            DestinationLocationId = destinationLocationId,
+            SourceLocationId = sourceLocationId,
+            DistanceInKm = Convert.ToDouble(distanceResult) / 1000
+        };
+
+        var response = await httpClient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Connections/add-connection", connectionToAdd);
+        var responseAsString = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<GetConnectionDto>>(responseAsString, options);
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Connection added successfully");
+
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
+        }
+    }
+
+    private double GetLatitude(string locationId)
+    {
+        // Replace with your logic to retrieve the latitude for the specified location
+        return locations.Where(c => c.Id == locationId).Select(c => c.Latitude).FirstOrDefault();
+    }
+
+    private double GetLongitude(string locationId)
+    {
+        // Replace with your logic to retrieve the longitude for the specified location
+        return locations.Where(c => c.Id == locationId).Select(c => c.Longitude).FirstOrDefault();
+    }
+}
