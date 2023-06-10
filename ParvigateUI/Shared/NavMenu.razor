@@ -14,30 +14,12 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3 dropdown" @onclick="ToggleMainDropdown">
-            <a class="nav-link dropdown-toggle" href="" role="button" aria-expanded="@openMainDropDown">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Main
-            </a>
-            <!-- Add dropdown menu here -->
-            <div class="dropdown-menu" style="display: @(openMainDropDown ? "block" : "none")">
-                <NavLink class="dropdown-item" href="#">
-                    Home
-                </NavLink>
-                <NavLink class="dropdown-item" href="counter">
-                    Counter
-                </NavLink>
-                <NavLink class="dropdown-item" href="fetchdata">
-                    FetchData
-                </NavLink>
-            </div>
-        </div>
-
         <div class="nav-item px-3 dropdown" @onmouseover="ToggleLocationDropDown" @onmouseout="ToggleLocationDropDown">
-                <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openLocationDropDown">
+                <a class="nav-link dropdown-toggle" href="add-location" role="button" aria-expanded="@openLocationDropDown">
                     <span class="oi oi-list-rich" aria-hidden="true"></span> Locations
                 </a>
                 <div class="dropdown-menu" style="display: @(openLocationDropDown ? "block" : "none")">
-                    <NavLink class="dropdown-item" href="map">
+                    <NavLink class="dropdown-item" href="add-location">
                         Add Location
                     </NavLink>
                     <NavLink class="dropdown-item" href="list-locations">
@@ -46,7 +28,7 @@
                 </div>
         </div>
         <div class="nav-item px-3 dropdown" @onmouseover="ToggleConnectionDropDown" @onmouseout="ToggleConnectionDropDown">
-                <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openConnectionDropDown">
+                <a class="nav-link dropdown-toggle" href="add-connection" role="button" aria-expanded="@openConnectionDropDown">
                     <span class="oi oi-list-rich" aria-hidden="true"></span> Connections
                 </a>
                 <!-- Add dropdown menu here -->
@@ -61,15 +43,12 @@
                 </div>
         </div>
         <div class="nav-item px-3 dropdown" @onmouseover="ToggleTagDropdown" @onmouseout="ToggleTagDropdown">
-            <a class="nav-link dropdown-toggle" href="map" role="button" aria-expanded="@openTagDropDown">
+            <a class="nav-link dropdown-toggle" href="list-tags" role="button" aria-expanded="@openTagDropDown">
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Tags
             </a>
             <!-- Add dropdown menu here -->
             <div class="dropdown-menu" style="display: @(openTagDropDown ? "block" : "none")">
-                <NavLink class="dropdown-item" href="map">
-                    Add Tag
-                </NavLink>
-                <NavLink class="dropdown-item" href="subpage2">
+                <NavLink class="dropdown-item" href="list-tags">
                     List all tags
                 </NavLink>
                 <!-- Add more dropdown items as needed -->
@@ -89,7 +68,7 @@
 @code {
     private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private bool openTagDropDown = false;
     private bool openMainDropDown = false;

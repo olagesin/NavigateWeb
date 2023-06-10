@@ -1,6 +1,6 @@
 ﻿@inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
-@page "/map"
+@page "/add-location"
 @using System.Net.Http
 @using System.Net.Http.Json
 @using ParvigateUI.DTOs;
@@ -42,7 +42,7 @@
             <label for="spaceCount">Space Count:</label>
             <input id="spaceCount" type="number" @bind="location.SpaceCount" />
         </div>
-        <button type="button" class="btn btn-primary" @onclick="AddLocation">Submit</button>
+        <button type="button" class="btn btn-primary" @onclick="SaveLocation">Submit</button>
     </form>
     </div>
 }
@@ -65,9 +65,9 @@
 </style>
 
 @code {
-    private static LeafletMap leafletMap;
-    private IJSObjectReference? module;
-    private string? result;
+    private static AddLocation leafletMap;
+    private IJSObjectReference module;
+    private string result;
     private HttpClient httpClient;
     private AddLocationDto location;
 
@@ -102,7 +102,7 @@
         StateHasChanged();
     }
 
-    private async Task AddLocation()
+    private async Task SaveLocation()
     {
         if (location != null)
         {
