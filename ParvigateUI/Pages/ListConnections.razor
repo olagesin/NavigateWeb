@@ -14,6 +14,10 @@
 {
     <p><em>Loading...</em></p>
 }
+else if(connections.Count == 0)
+{
+    <p><em>Connections list empty</em></p>
+}
 else
 {
     <table class="table">
@@ -25,8 +29,9 @@ else
                 <th>Destination location Latitude</th>
                 <th>Destination location Longitude</th>
                 <th>Destination location name</th>
-                <th>Average speed</th>
                 <th>Distance in KM</th>
+                <th>Date Created</th>
+                <th>Is Active</th>
             </tr>
         </thead>
         <tbody>
@@ -39,8 +44,10 @@ else
                     <td>@connection.DestinationLocation.Latitude</td>
                     <td>@connection.DestinationLocation.Longitude</td>
                     <td>@connection.DestinationLocation.Name</td>
-                    <td>@connection.AverageSpeed</td>
                     <td>@connection.DistanceInKm</td>
+                    <td>@connection.CreatedDate</td>
+                    <td>@connection.IsActive</td>
+
                     <td>
                         <button @onclick="() => HandleDeleteClick(connection.Id)">Delete</button>
                     </td>
@@ -89,7 +96,9 @@ else
         {
             await JSRuntime.InvokeVoidAsync("alert", responseObject.Data);
 
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            connections.Remove(connections.FirstOrDefault(c => c.Id == connectionId));
+
+            //NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
         else
         {

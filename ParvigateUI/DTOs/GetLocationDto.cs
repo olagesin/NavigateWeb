@@ -8,5 +8,7 @@
         public double Latitude { get; set; }
         public string Name { get; set; }
         public int SpaceCount { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public bool IsActive { get; set; }
     }
 }

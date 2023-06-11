@@ -10,9 +10,13 @@
 <h3>List of Locations</h3>
 
 
-@if (locations == null || locations.Count == 0)
+@if (locations == null)
 {
     <p><em>Loading...</em></p>
+}
+else if (locations.Count == 0)
+{
+    <p><em>Locations list empty</em></p>
 }
 else
 {
@@ -25,6 +29,8 @@ else
                 <th>Latitude</th>
                 <th>Name</th>
                 <th>Space Count</th>
+                <th>Date Created</th>
+                <th>Is Active</th>
             </tr>
         </thead>
         <tbody>
@@ -37,6 +43,8 @@ else
                     <td>@location.Latitude</td>
                     <td>@location.Name</td>
                     <td>@location.SpaceCount</td>
+                    <td>@location.CreatedDate</td>
+                    <td>@location.IsActive</td>
                     <td>
                         <button @onclick="() => HandleDeleteClick(location.Id)">Delete</button>
                     </td>
@@ -53,9 +61,8 @@ else
     };
 
     private GlobalResponse<List<GetLocationDto>> locationsResponse;
-    private List<GetLocationDto> locations = new List<GetLocationDto>();
-    private IJSObjectReference? module;
-    private string name = "name";
+    private List<GetLocationDto> locations;
+    private IJSObjectReference module;
 
 
     protected override async Task OnInitializedAsync()
@@ -78,14 +85,21 @@ else
     {
         var response = await Httpclient.DeleteAsync($"https://parvigateapi.azurewebsites.net/Locations/delete-location?locationId={locationId}");
 
+        var responseAsString = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<string>>(responseAsString, options);
+
+
         if (response.IsSuccessStatusCode)
         {
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Data);
+
+            locations.Remove(locations.FirstOrDefault(c => c.Id == locationId));
+
+            //NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
         else
         {
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            await JSRuntime.InvokeVoidAsync("alert", errorMessage);
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
         }
     }
 

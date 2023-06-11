@@ -1,5 +1,100 @@
-﻿<h3>ListTags</h3>
+﻿@page "/list-tags"
+@inject HttpClient Httpclient
+@using System.Text.Json
+@using ParvigateUI.DTOs
+@using System.Text.Json.Serialization;
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<h3>Tags</h3>
+
+@if (tags == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (tags.Count == 0)
+{
+    <p><em>Tag list empty</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Serial Number</th>
+                <th>Date Created</th>
+                <th>Is Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tag in tags)
+            {
+                <tr>
+                    <td>@tag.Id</td>
+                    <td>@tag.SerialNumber</td>
+                    <td>@tag.CreatedDate</td>
+                    <td>@tag.IsActive</td>
+                    <td>
+                        <button @onclick="() => HandleDeleteClick(tag.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
 
+    private GlobalResponse<List<GetTagDto>> requestResponseModel;
+    private List<GetTagDto> tags;
+    private IJSObjectReference module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Tags/list-all-tags");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                requestResponseModel = JsonSerializer.Deserialize<GlobalResponse<List<GetTagDto>>>(responseAsString, options);
+                tags = requestResponseModel.Data;
+            }
+        }
+        //return base.OnInitializedAsync();
+    }
+
+    private async Task DeleteTag(string tagId)
+    {
+        var response = await Httpclient.DeleteAsync($"https://parvigateapi.azurewebsites.net/Tags/delete-tag?tagId={tagId}");
+
+        var responseAsString = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<string>>(responseAsString, options);
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Data);
+
+            tags.Remove(tags.FirstOrDefault(c => c.Id == tagId));
+
+            //NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
+        }
+    }
+
+    private async Task HandleDeleteClick(string tagId)
+    {
+        await DeleteTag(tagId);
+    }
 }
