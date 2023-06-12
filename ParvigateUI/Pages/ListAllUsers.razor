@@ -1,5 +1,100 @@
-﻿<h3>ListAllUsers</h3>
+﻿@page "/list-users"
+@inject HttpClient Httpclient
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@using ParvigateUI.DTOs;
+@inject IJSRuntime JSRuntime
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Users</h3>
+
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (users.Count == 0)
+{
+    <p><em>Users list empty</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Role name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.FirstName</td>
+                    <td>@user.LastName</td>
+                    <td>@user.RoleName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <button @onclick="() => HandleDeleteClick(user.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
 
+    private GlobalResponse<List<GetUserDto>> usersFetchResponse;
+    private List<GetUserDto> users;
+    private IJSObjectReference module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Users/get-users");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                usersFetchResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetUserDto>>>(responseAsString, options);
+                users = usersFetchResponse.Data;
+            }
+        }
+    }
+
+
+    private async Task DeleteUser(string userId)
+    {
+        var response = await Httpclient.DeleteAsync($"https://parvigateapi.azurewebsites.net/Users/delete-user?userId={userId}");
+
+        var responseAsString = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<string>>(responseAsString, options);
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Data);
+
+            users.Remove(users.FirstOrDefault(c => c.Id == userId));
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
+        }
+    }
+
+    private async Task HandleDeleteClick(string userId)
+    {
+        await DeleteUser(userId);
+    }
 }
