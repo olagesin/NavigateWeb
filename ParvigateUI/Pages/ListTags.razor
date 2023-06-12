@@ -5,6 +5,8 @@
 @using System.Text.Json.Serialization;
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
 
 <h3>Tags</h3>
 

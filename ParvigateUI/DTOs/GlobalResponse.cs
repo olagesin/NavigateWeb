@@ -10,4 +10,12 @@
             Errors = new List<ErrorItemModel>();
         }
     }
+
+    public class GlobalResponseForValidationErrors<T>
+    {
+        public T Data { get; set; }
+
+        public ValidationErrorModel Errors { get; set; }
+        public int Status { get; set; }
+    }
 }

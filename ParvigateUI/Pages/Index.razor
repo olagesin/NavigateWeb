@@ -1,18 +1,27 @@
 ﻿@page "/"
+@attribute [Authorize(Roles = "Admin")]
 
-<PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<AuthorizeView >
+    <Authorized>
+        <PageTitle>Index</PageTitle>
 
-Welcome to your new app.
+        <h1>Hello, world!</h1>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+        Welcome to your new app.
 
-<Map 
-    width="800px"
-    height="400px"
-    Parameters="@parameters"
-></Map>
+        <SurveyPrompt Title="How is Blazor working for you?" />
+
+        <Map width="800px"
+             height="400px"
+             Parameters="@parameters"></Map>
+
+    </Authorized>
+
+    <NotAuthorized>
+        <span>You are not authorized to view this</span>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code{
     Map.LoadParameters parameters = new Map.LoadParameters()

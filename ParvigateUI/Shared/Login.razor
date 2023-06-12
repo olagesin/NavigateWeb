@@ -1,0 +1,82 @@
+﻿@page "/login"
+@using ParvigateUI.DTOs;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@using System.Net;
+@inject HttpClient httpclient
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILocalStorageService LocalStorage
+@inject IJSRuntime JSRuntime
+
+
+<h3>Login</h3>
+
+<EditForm Model="loginRequest" OnSubmit="HandleLogin">
+    <label for="username">Name</label>
+    <InputText id="username" @bind-Value="loginRequest.Email" />
+    <label for="password">Password</label>
+    <InputText id="password" @bind-Value="loginRequest.Password" type="password" />
+    <button type="submit" class="btn btn-primary">Login</button>
+</EditForm>
+
+@code {
+    LoginRequest loginRequest = new LoginRequest();
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+
+
+    async Task HandleLogin()
+    {
+        if(loginRequest.Email is null || loginRequest.Password is null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Please fill the login form correctly");
+        }
+        else
+        {
+            var response = await httpclient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Users/login", loginRequest);
+            var responseAsString = await response.Content.ReadAsStringAsync();
+
+            if(response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                var validationErrorModel = JsonSerializer.Deserialize<GlobalResponseForValidationErrors<ValidationErrorModel>>(responseAsString, options);
+
+                if (validationErrorModel.Errors.Email is null || validationErrorModel.Errors.Email.Count == 0)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", validationErrorModel.Errors.Email.First());
+                }
+                else if (validationErrorModel.Errors.Password is null || validationErrorModel.Errors.Password.Count == 0)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", validationErrorModel.Errors.Password.First());
+                }
+                else if (validationErrorModel.Errors.PhoneNumber is null || validationErrorModel.Errors.PhoneNumber.Count == 0)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", validationErrorModel.Errors.PhoneNumber.First());
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "a validation error occured");
+                }
+            }
+            else
+            {
+                var responseObject = JsonSerializer.Deserialize<GlobalResponse<LoginResponse>>(responseAsString, options);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    //await JSRuntime.InvokeVoidAsync("alert", responseObject.Data);
+
+                    Console.WriteLine(responseObject.Data.Token);
+                    await LocalStorage.SetItemAsync("token", responseObject.Data.Token);
+                    await AuthStateProvider.GetAuthenticationStateAsync();
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
+                }
+            }
+        }
+    }
+}
