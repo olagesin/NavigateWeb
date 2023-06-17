@@ -1,0 +1,71 @@
+﻿@page "/list-assigned-tags"
+@inject HttpClient Httpclient
+@using System.Text.Json
+@using ParvigateUI.DTOs
+@using System.Text.Json.Serialization;
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+
+<h3>Assigned Tags</h3>
+
+@if (tags == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (tags.Count == 0)
+{
+    <p><em>Tag list empty</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Location Name</th>
+                <th>Serial Number</th>
+                <th>Is Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tag in tags)
+            {
+                <tr>
+                    <td>@tag.Id</td>
+                    <td>@tag.Location.Name</td>
+                    <td>@tag.Tag.SerialNumber</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+
+    private GlobalResponse<List<GetLocationTagDto>> requestResponseModel;
+    private List<GetLocationTagDto> tags;
+    private IJSObjectReference module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Tags/list-all-assigned-tags");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                requestResponseModel = JsonSerializer.Deserialize<GlobalResponse<List<GetLocationTagDto>>>(responseAsString, options);
+                tags = requestResponseModel.Data;
+            }
+        }
+        //return base.OnInitializedAsync();
+    }
+}

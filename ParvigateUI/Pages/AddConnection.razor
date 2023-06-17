@@ -60,13 +60,13 @@
     private GlobalResponse<List<GetLocationDto>> locationsResponse;
     private List<GetLocationDto> locations = new List<GetLocationDto>();
     private bool disableCalculateButton = true;
-    private HttpClient httpClient;
+    //private HttpClient httpClient;
 
 
 
     protected override async Task OnInitializedAsync()
     {
-        httpClient = new HttpClient();
+        //httpClient = new HttpClient();
 
         var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Locations/list-all-locations");
 
@@ -79,7 +79,6 @@
                 locations = locationsResponse.Data;
             }
         }
-
 
         module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./connections.js");
 
@@ -128,7 +127,7 @@
             DistanceInKm = Convert.ToDouble(distanceResult) / 1000
         };
 
-        var response = await httpClient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Connections/add-connection", connectionToAdd);
+        var response = await Httpclient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Connections/add-connection", connectionToAdd);
         var responseAsString = await response.Content.ReadAsStringAsync();
         var responseObject = JsonSerializer.Deserialize<GlobalResponse<GetConnectionDto>>(responseAsString, options);
 

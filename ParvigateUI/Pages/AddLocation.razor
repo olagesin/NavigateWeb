@@ -5,6 +5,7 @@
 @using System.Net.Http.Json
 @using ParvigateUI.DTOs;
 @using System.Reflection;
+@inject HttpClient Httpclient
 @attribute [Authorize(Roles = "Admin")]
 
 
@@ -68,13 +69,13 @@
     private static AddLocation leafletMap;
     private IJSObjectReference module;
     private string result;
-    private HttpClient httpClient;
+    //private HttpClient httpClient;
     private AddLocationDto location;
 
     protected override async Task OnInitializedAsync()
     {
         leafletMap = this;
-        httpClient = new HttpClient();
+        //httpClient = new HttpClient();
 
         module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./leafletMap.js");
 
@@ -106,7 +107,7 @@
     {
         if (location != null)
         {
-            var response = await httpClient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Locations/add-location", location);
+            var response = await Httpclient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Locations/add-location", location);
             if (response.IsSuccessStatusCode)
             {
                 location = new AddLocationDto();

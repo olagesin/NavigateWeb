@@ -59,6 +59,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+
         var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Users/get-users");
 
         if (response.IsSuccessStatusCode)
