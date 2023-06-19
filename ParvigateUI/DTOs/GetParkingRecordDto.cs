@@ -7,5 +7,16 @@
 
         public DateTime? DepartureTime { get; set; }
         public DateTime? CheckoutTime { get; set; }
+
+        public string TagSerialNumber { get; set; }
+
+        public GetEventDto Event { get; set; }
     }
+
+    public class GetEventDto
+    {
+        public string Id { get; set; }
+        public string EventName { get; set; }
+    }
+
 }

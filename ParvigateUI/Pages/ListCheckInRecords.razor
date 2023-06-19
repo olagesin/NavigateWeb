@@ -1,0 +1,73 @@
+﻿@page "/check-in-records"
+@inject HttpClient Httpclient
+@using System.Text.Json
+@using ParvigateUI.DTOs
+@using System.Text.Json.Serialization;
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Check in records</h3>
+
+@if (parkingRecords == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (parkingRecords.Count == 0)
+{
+    <p><em>Locations list empty</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Arrival time</th>
+                <th>Check in time</th>
+                <th>Check out time</th>
+                <th>Departure time</th>
+                <th>Event name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var parkingRecord in parkingRecords)
+            {
+                <tr>
+                    <td>@parkingRecord.ArrivalTime</td>
+                    <td>@parkingRecord.CheckInTime</td>
+                    <td>@parkingRecord.CheckoutTime</td>
+                    <td>@parkingRecord.DepartureTime</td>
+                    <td>@parkingRecord.Event.EventName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+
+    private GlobalResponse<List<GetParkingRecordDto>> parkingRecordsResponse;
+    private List<GetParkingRecordDto> parkingRecords;
+    private IJSObjectReference module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/LocationTags/list-all-checkinrecords");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                parkingRecordsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetParkingRecordDto>>>(responseAsString, options);
+                parkingRecords = parkingRecordsResponse.Data;
+            }
+        }
+    }
+
+}
