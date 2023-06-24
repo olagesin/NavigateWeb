@@ -1,0 +1,58 @@
+﻿@page "/create-event"
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http
+@using ParvigateUI.DTOs;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@inject IJSRuntime JSRuntime
+@inject HttpClient httpClient
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Add Event</h3>
+
+
+<div class="form-container">
+    <EditForm Model="@eventToCreate" OnValidSubmit="CreateEventMethod">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="eventName">Event Name:</label>
+            <InputText id="firstName" class="form-control" @bind-Value="@eventToCreate.EventName" />
+            <ValidationMessage For="@(() => eventToCreate.EventName)" />
+        </div>
+        <div class="form-group">
+            <label for="eventDate">Event date:</label>
+            <InputDate id="lastName" class="form-control" @bind-Value="@eventToCreate.EventDate" />
+            <ValidationMessage For="@(() => eventToCreate.EventDate)" />
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </EditForm>
+</div>
+
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+    private AddEventDto eventToCreate = new AddEventDto();
+
+    private async Task CreateEventMethod()
+    {
+        var response = await httpClient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Events/add-event", eventToCreate);
+
+        var responseAsString = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<GetEventDto>>(responseAsString, options);
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Event added successfully");
+            eventToCreate = new AddEventDto();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
+        }
+    }
+}

@@ -34,7 +34,8 @@
             <label for="locationType">Location Type:</label>
             <select id="locationType" @bind="location.LocationType">
                 <option value="ParkingStation">Parking Station</option>
-                <option value="EventCentre">Event Centre</option>
+                <option value="EventCenter">Event Center</option>
+                <option value="EntryPoint">Entry Point</option>
             </select>
         </div>
         <div class="form-group">
@@ -55,7 +56,7 @@
     .grid-container {
         display: grid;
         grid-template-columns: 1fr 1fr; 
-        gap: 20px; /* Adjust the gap between the columns as needed */
+        gap: 20px;
     }
 
     .map-container {
@@ -70,7 +71,7 @@
     private IJSObjectReference module;
     private string result;
     //private HttpClient httpClient;
-    private AddLocationDto location;
+    private AddLocationDto location = new AddLocationDto();
 
     protected override async Task OnInitializedAsync()
     {

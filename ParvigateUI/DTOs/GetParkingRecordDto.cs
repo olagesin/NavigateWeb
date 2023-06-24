@@ -11,12 +11,7 @@
         public string TagSerialNumber { get; set; }
 
         public GetEventDto Event { get; set; }
-    }
 
-    public class GetEventDto
-    {
-        public string Id { get; set; }
-        public string EventName { get; set; }
+        public GetLocationDto Location { get; set; }
     }
-
 }

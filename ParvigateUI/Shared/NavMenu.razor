@@ -27,6 +27,7 @@
                     </NavLink>
                 </div>
         </div>
+
         <div class="nav-item px-3 dropdown" @onmouseover="ToggleConnectionDropDown" @onmouseout="ToggleConnectionDropDown">
                 <a class="nav-link dropdown-toggle" href="add-connection" role="button" aria-expanded="@openConnectionDropDown">
                     <span class="oi oi-list-rich" aria-hidden="true"></span> Connections
@@ -42,6 +43,7 @@
                     <!-- Add more dropdown items as needed -->
                 </div>
         </div>
+
         <div class="nav-item px-3 dropdown" @onmouseover="ToggleTagDropdown" @onmouseout="ToggleTagDropdown">
             <a class="nav-link dropdown-toggle" href="list-tags" role="button" aria-expanded="@openTagDropDown">
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Tags
@@ -52,6 +54,7 @@
                 </NavLink>
             </div>
         </div>
+
         <div class="nav-item px-3 dropdown" @onmouseover="ToggleUserDropDown" @onmouseout="ToggleUserDropDown">
             <a class="nav-link dropdown-toggle" href="list-users" role="button" aria-expanded="@openTagDropDown">
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Users
@@ -63,6 +66,21 @@
                 </NavLink>
                 <NavLink class="dropdown-item" href="list-users">
                     List all Users
+                </NavLink>
+            </div>
+        </div>
+
+
+        <div class="nav-item px-3 dropdown" @onmouseover="ToggleEventDropdown" @onmouseout="ToggleEventDropdown">
+            <a class="nav-link dropdown-toggle" href="list-events" role="button" aria-expanded="@openEventDropDown">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Events
+            </a>
+            <div class="dropdown-menu" style="display: @(openEventDropDown ? "block" : "none")">
+                <NavLink class="dropdown-item" href="create-event">
+                    Create Event
+                </NavLink>
+                <NavLink class="dropdown-item" href="list-events">
+                    List all Events
                 </NavLink>
             </div>
         </div>
@@ -87,6 +105,7 @@
     private bool openLocationDropDown = false;
     private bool openConnectionDropDown = false;
     private bool openUserDropDown = false;
+    private bool openEventDropDown = false;
 
     private void ToggleUserDropDown()
     {
@@ -106,6 +125,11 @@
     private void ToggleTagDropdown()
     {
         openTagDropDown = !openTagDropDown;
+    }
+
+    private void ToggleEventDropdown()
+    {
+        openEventDropDown = !openEventDropDown;
     }
 
     private void ToggleMainDropdown()

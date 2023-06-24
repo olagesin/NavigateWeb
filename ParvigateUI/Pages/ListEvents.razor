@@ -1,4 +1,4 @@
-﻿@page "/list-locations"
+﻿@page "/list-events"
 @inject HttpClient Httpclient
 @using System.Text.Json
 @using ParvigateUI.DTOs
@@ -8,14 +8,13 @@
 @attribute [Authorize(Roles = "Admin")]
 
 
-<h3>List of Locations</h3>
+<h3>Events</h3>
 
-
-@if (locations == null)
+@if (events == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (locations.Count == 0)
+else if (events.Count == 0)
 {
     <p><em>Locations list empty</em></p>
 }
@@ -24,66 +23,55 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Location ID</th>
-                <th>Location Type</th>
-                <th>Longitude</th>
-                <th>Latitude</th>
-                <th>Name</th>
-                <th>Space Count</th>
-                <th>Date Created</th>
-                <th>Is Active</th>
+                <th>Event ID</th>
+                <th>Event Name</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var location in locations)
+            @foreach (var eventRecord in events)
             {
                 <tr>
-                    <td>@location.Id</td>
-                    <td>@location.LocationType</td>
-                    <td>@location.Longitude</td>
-                    <td>@location.Latitude</td>
-                    <td>@location.Name</td>
-                    <td>@location.SpaceCount</td>
-                    <td>@location.CreatedDate</td>
-                    <td>@location.IsActive</td>
+                    <td>@eventRecord.Id</td>
+                    <td>@eventRecord.EventName</td>
                     <td>
-                        <button @onclick="() => HandleDeleteClick(location.Id)">Delete</button>
+                        <button @onclick="() => HandleDeleteClick(eventRecord.Id)">Delete</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 }
+
 @code {
     JsonSerializerOptions options = new JsonSerializerOptions
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNameCaseInsensitive = true
-    };
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
 
-    private GlobalResponse<List<GetLocationDto>> locationsResponse;
-    private List<GetLocationDto> locations;
+    private GlobalResponse<List<GetEventDto>> eventsResponse;
+    private List<GetEventDto> events;
     private IJSObjectReference module;
-
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Locations/list-all-locations");
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Events/list-all-events");
 
         if (response.IsSuccessStatusCode)
         {
             var responseAsString = await response.Content.ReadAsStringAsync();
             if (string.IsNullOrWhiteSpace(responseAsString) is false)
             {
-                locationsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetLocationDto>>>(responseAsString, options);
-                locations = locationsResponse.Data.OrderBy(c => c.Name).ToList();
+                eventsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetEventDto>>>(responseAsString, options);
+                events = eventsResponse.Data.OrderBy(c => c.EventName).ToList();
             }
         }
     }
 
+
     private async Task DeleteLocation(string locationId)
     {
-        var response = await Httpclient.DeleteAsync($"https://parvigateapi.azurewebsites.net/Locations/delete-location?locationId={locationId}");
+        var response = await Httpclient.DeleteAsync($"https://parvigateapi.azurewebsites.net/Events/delete-event?eventId={locationId}");
 
         var responseAsString = await response.Content.ReadAsStringAsync();
         var responseObject = JsonSerializer.Deserialize<GlobalResponse<string>>(responseAsString, options);
@@ -93,7 +81,7 @@ else
         {
             await JSRuntime.InvokeVoidAsync("alert", responseObject.Data);
 
-            locations.Remove(locations.FirstOrDefault(c => c.Id == locationId));
+            events.Remove(events.FirstOrDefault(c => c.Id == locationId));
 
             //NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }

@@ -56,7 +56,7 @@
         var response = await httpClient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/Users/add-user", user);
 
         var responseAsString = await response.Content.ReadAsStringAsync();
-        var responseObject = JsonSerializer.Deserialize<GlobalResponse<GetConnectionDto>>(responseAsString, options);
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<GetUserDto>>(responseAsString, options);
 
 
         if (response.IsSuccessStatusCode)
