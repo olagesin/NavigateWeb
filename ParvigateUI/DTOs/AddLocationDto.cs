@@ -18,14 +18,19 @@ namespace ParvigateUI.DTOs
         public int SpaceCount { get; set; }
     }
 
-    public class AddConnectionDto
+    public class GetAssignedStaffDto
     {
-        [Required]
-        public string SourceLocationId { get; set; }
-
-        [Required]
-        public string DestinationLocationId { get; set; }
-        public double DistanceInKm { get; set; }
-        public double AverageSpeed { get; set; }
+        public string Id { get; set; }
+        public GetEventDto Event { get; set; }
+        public GetLocationDto Location { get; set; }
+        public GetUserDto User { get; set; }
     }
+
+    public class AssignStaffToLocationDto
+    {
+        public string UserId { get; set; }
+        public string EventId { get; set; }
+        public string LocationId { get; set; }
+    }
+
 }

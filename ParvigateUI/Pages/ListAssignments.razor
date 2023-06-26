@@ -1,0 +1,76 @@
+﻿@page "/list-location-assignments"
+@inject HttpClient Httpclient
+@using System.Text.Json
+@using ParvigateUI.DTOs
+@using System.Text.Json.Serialization;
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Location Assignments</h3>
+
+
+
+@if (staffAssignments == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (staffAssignments.Count == 0)
+{
+    <p><em>Staff Assignment list empty</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Staff name</th>
+                <th>Event Name</th>
+                <th>Event Status</th>
+                <th>Location name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var staffAssignment in staffAssignments)
+            {
+                <tr>
+                    <td>@staffAssignment.Id</td>
+                    <td>@staffAssignment.User.FirstName @staffAssignment.User.LastName</td>
+                    <td>@staffAssignment.Event.EventName</td>
+                    <td>@staffAssignment.Event.EventStatus</td>
+                    <td>@staffAssignment.Location.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true
+        };
+
+    private GlobalResponse<List<GetAssignedStaffDto>> staffAssignmentResponse;
+    private List<GetAssignedStaffDto> staffAssignments;
+    private IJSObjectReference module;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/LocationTags/list-all-assigned-staff");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                staffAssignmentResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetAssignedStaffDto>>>(responseAsString, options);
+                staffAssignments = staffAssignmentResponse.Data.OrderBy(c => c.User.FirstName).ToList();
+            }
+        }
+    }
+
+}

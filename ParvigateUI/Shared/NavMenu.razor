@@ -19,11 +19,17 @@
                     <span class="oi oi-list-rich" aria-hidden="true"></span> Locations
                 </a>
                 <div class="dropdown-menu" style="display: @(openLocationDropDown ? "block" : "none")">
-                    <NavLink class="dropdown-item" href="add-location">
+                <NavLink class="dropdown-item" href="add-location">
                         Add Location
                     </NavLink>
-                    <NavLink class="dropdown-item" href="list-locations">
+                <NavLink class="dropdown-item" href="list-locations">
                         List all locations
+                    </NavLink>
+                <NavLink class="dropdown-item" href="list-location-assignments">
+                        List all Assigned locations
+                    </NavLink>
+                <NavLink class="dropdown-item" href="assign-staff-to-location">
+                        Assign staff to loction
                     </NavLink>
                 </div>
         </div>

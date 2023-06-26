@@ -1,0 +1,199 @@
+﻿@page "/assign-staff-to-location"
+@inject IJSRuntime JSRuntime
+@inject HttpClient Httpclient
+@using System.Text.Json.Serialization;
+@using System.Text.Json
+@using ParvigateUI.DTOs;
+@attribute [Authorize(Roles = "Admin")]
+
+
+<div class="container">
+    <div class="row justify-content-center align-items-center vh-100">
+        <div class="col-lg-6">
+            <h3 class="text-center mb-4">Assign Users to locations</h3>
+
+            <div class="form-group">
+                <label for="location">Select Location:</label>
+                <select id="location" class="form-control" @onchange="OnLocationChange">
+                    <option value="">Select a location</option>
+                    @foreach (var location in locations)
+                    {
+                        <option value="@location.Id">@location.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="user">Select User:</label>
+                <select id="user" class="form-control" @onchange="OnUserChange">
+                    <option value="">Select a User</option>
+                    @foreach (var user in users)
+                    {
+                        <option value="@user.Id">@user.FirstName @user.LastName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="event">Select Event:</label>
+                <select id="event" class="form-control" @onchange="OnEventChange">
+                    <option value="">Select an Event</option>
+                    @foreach (var eventToUse in events)
+                    {
+                        <option value="@eventToUse.Id">@eventToUse.EventName</option>
+                    }
+                </select>
+            </div>
+
+            <br />
+            <br />
+
+            <div class="text-center">
+                <button class="btn btn-primary" @onclick="AssignUser" disabled="@disableAssignButton">Assign</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    JsonSerializerOptions options = new JsonSerializerOptions
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNameCaseInsensitive = true
+    };
+    private string userId;
+    private string locationId;
+    private string eventId;
+    private double? distanceResult;
+    private IJSObjectReference module;
+    private string result;
+    private GlobalResponse<List<GetLocationDto>> locationsResponse;
+    private GlobalResponse<List<GetUserDto>> usersResponse;
+    private GlobalResponse<List<GetEventDto>> eventsResponse;
+
+    private List<GetLocationDto> locations = new List<GetLocationDto>();
+    private List<GetUserDto> users = new List<GetUserDto>();
+    private List<GetEventDto> events = new List<GetEventDto>();
+
+
+
+    private bool disableAssignButton = true;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+
+        await LoadLocations();
+
+        await LoadEvents();
+        //return base.OnInitializedAsync();
+    }
+
+    private async Task<List<GetLocationDto>> LoadLocations()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Locations/list-all-locations");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                locationsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetLocationDto>>>(responseAsString, options);
+                locations = locationsResponse.Data;
+            }
+
+            return locations;
+        }
+
+        return null;
+    }
+
+
+    private async Task<List<GetEventDto>> LoadEvents()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Events/list-all-events");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                eventsResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetEventDto>>>(responseAsString, options);
+                events = eventsResponse.Data;
+            }
+
+            return events;
+        }
+
+        return null;
+    }
+
+
+        private async Task<List<GetUserDto>> LoadUsers()
+    {
+        var response = await Httpclient.GetAsync("https://parvigateapi.azurewebsites.net/Users/get-users");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseAsString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(responseAsString) is false)
+            {
+                usersResponse = JsonSerializer.Deserialize<GlobalResponse<List<GetUserDto>>>(responseAsString, options);
+                users = usersResponse.Data;
+            }
+
+            return users;
+        }
+
+        return null;
+    }
+
+    private async Task AssignUser()
+    {
+        var assignmentToAdd = new AssignStaffToLocationDto()
+        {
+            UserId = userId,
+            LocationId = locationId,
+            EventId  = eventId
+        };
+
+        var response = await Httpclient.PostAsJsonAsync("https://parvigateapi.azurewebsites.net/LocationTags/assign-staff-to-location", assignmentToAdd);
+        var responseAsString = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonSerializer.Deserialize<GlobalResponse<GetAssignedStaffDto>>(responseAsString, options);
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Staff assigned successfully");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", responseObject.Errors.First().ErrorMessages.First());
+        }
+    }
+
+    private void OnLocationChange(ChangeEventArgs e)
+    {
+        locationId = e.Value.ToString();
+        UpdateRenameButtonState();
+    }
+
+    private void OnEventChange(ChangeEventArgs e)
+    {
+        eventId = e.Value.ToString();
+        UpdateRenameButtonState();
+    }
+
+
+    private void OnUserChange(ChangeEventArgs e)
+    {
+        userId = e.Value.ToString();
+        UpdateRenameButtonState();
+    }
+
+    private void UpdateRenameButtonState()
+    {
+        disableAssignButton = string.IsNullOrEmpty(locationId) || string.IsNullOrEmpty(eventId) || string.IsNullOrEmpty(userId);
+    }
+}
